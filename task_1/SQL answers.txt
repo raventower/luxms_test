@@ -1,0 +1,105 @@
+Задание 1:
+
+-- "CUSTOM".operations определение
+
+-- Drop table
+
+-- DROP TABLE "CUSTOM".operations;
+
+CREATE TABLE "CUSTOM".operations (
+	operation_id int4 NOT NULL,
+	account_id int4 NULL,
+	operation_type varchar(1) NULL,
+	operation_date date NULL,
+	agreement_num varchar(255) NULL,
+	amount int8 NULL,
+	CONSTRAINT operations_operation_type_check CHECK (((operation_type)::text = ANY ((ARRAY['D'::character varying, 'C'::character varying])::text[]))),
+	CONSTRAINT operations_pkey PRIMARY KEY (operation_id)
+);
+
+
+-- "CUSTOM".org определение
+
+-- Drop table
+
+-- DROP TABLE "CUSTOM".org;
+
+CREATE TABLE "CUSTOM".org (
+	org_id int4 NULL,
+	parent_id int4 NULL,
+	dt date NULL,
+	"name" text NULL,
+	tlg varchar(255) NULL
+);
+
+
+-- "CUSTOM".summary определение
+
+-- Drop table
+
+-- DROP TABLE "CUSTOM".summary;
+
+CREATE TABLE "CUSTOM".summary (
+	org_id int4 NULL,
+	dt date NULL,
+	amount int8 NULL
+);
+
+
+Задание 2:
+
+select s.org_id, name, 
+sum(amount) as "Сумма", 
+avg(amount) as "Среднее",
+count(amount) as "Количество" 
+from summary s 
+left join (
+select distinct org_id, name 
+from org ) o on o.org_id=s.org_id
+group by s.org_id, name
+having count(amount)>=20 
+order by org_id;
+
+
+Задание 3:
+
+with debet_operations as (
+select operation_id, amount 
+from operations o2 
+where operation_type='D'
+),
+ credit_operations as (
+select operation_id, amount
+from operations o2
+where operation_type='C')
+select account_id, operation_date, agreement_num, 
+d.amount, d.operation_id as d_operation,
+c.operation_id, c.amount as c_operation
+from operations o
+left join debet_operations d on o.operation_id=d.operation_id
+left join credit_operations c on o.operation_id=c.operation_id
+order by operation_date, agreement_num;
+
+
+Задание 5:
+
+WITH RECURSIVE tree AS (
+   SELECT org_id, 
+   		parent_id, 
+   		name,
+   		name as tree_name,
+   		0 AS level
+   FROM (select * from org where dt='2022-01-01')
+   WHERE parent_id is null 
+   UNION ALL
+   SELECT o.org_id, 
+   		o.parent_id, 
+   		o.name, 
+   		tree_name || ':' || o.name as tree_name,
+   		tree.level + 1 AS level
+   FROM (select * from org where dt='2022-01-01') o
+      JOIN tree
+          ON o.parent_id = tree.org_id
+)
+select * from tree;
+

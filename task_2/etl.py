@@ -1,5 +1,8 @@
 from api import APIRequests
 
+# Константы
+TOTAL_EPISODS=51
+
 class ETLProcesser():
     def __init__(self):
         self.earth_arr=[]

@@ -1,0 +1,5 @@
+SQLAlchemy==1.4.44
+pandas==1.5.3
+jupyterlab==4.0.10
+json5==0.9.14
+requests==2.31.0
